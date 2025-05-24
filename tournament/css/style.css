@@ -1,0 +1,210 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Header Bar Styles - fixed at top */
+  .app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px; /* smaller than footer */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 40px; /* similar horizontal padding to footer */
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 10; /* above footer */
+  }
+  
+  .budget-amount {
+    border: 2px solid #007BFF;
+    padding: 4px 12px;
+    border-radius: 12px;
+    color: #007BFF;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .header-left,
+  .header-center,
+  .header-right {
+    display: flex;
+    align-items: center;
+  }
+  
+  .user-name,
+  .app-name,
+  .budget-amount {
+    font-weight: bold;
+    font-size: 14px; /* slightly smaller text */
+    color: #007BFF;
+  }
+  
+  .header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0;
+  }
+  
+  .app-logo {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+  }
+  
+  .small-icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 6px;    /* moves image slightly right */
+    position: relative;
+    top: -2px;            /* moves image slightly up */
+    left: 2px;            /* moves image slightly right */
+  }
+  
+
+  .header-left img.user-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .header-left .user-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #007BFF;
+    margin: 0, 0;
+  }
+
+  .budget-amount {
+    border: 2px solid #007BFF;
+    padding: 6px 14px;
+    border-radius: 12px;
+    color: #007BFF;
+    font-weight: bold;
+    font-size: 16px;
+    min-width: 80px;
+    text-align: center;
+    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    outline: none;
+    border-style: solid;
+  }
+  
+  .budget-amount:hover {
+    background-color: #007BFF;
+    color: white;
+  }
+
+  .account-user-image {
+    display: block;
+    align-items: center;
+    width: 100px;   /* adjust size as needed */
+    height: 100px;  /* adjust size as needed */
+  }
+
+  .account-main {
+    text-align: center;
+    margin-top: 200px;
+  }
+
+  .create-user-image {
+    display: block;
+    align-items: center;
+    width: 100px;   /* adjust size as needed */
+    height: 100px;  /* adjust size as needed */
+    margin: 0 auto;
+  }
+  
+  .create-main {
+    text-align: center;
+    margin-top: 200px;
+  }
+  
+
+  .budget-image {
+    display: block;
+    align-items: center;
+    width: 100px;   /* adjust size as needed */
+    height: 100px;  /* adjust size as needed */
+    margin: 0 auto;
+  }
+  
+  .budget-main {
+    text-align: center;
+    margin-top: 200px;
+  }
+  
+  /* Fixed footer bar */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 1;
+  }
+  
+  /* All footer buttons */
+  .footer-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s;
+    z-index: 2;
+    
+    border: 3px solid #007BFF;
+    box-shadow: 0 0 0 5px #90CAF9;
+  }
+  
+  /* Floating centered plus button */
+  .footer-button.plus {
+    position: absolute;
+    bottom: 10px; /* appears above footer */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 70px;
+    background-color: white;
+    color: #007BFF;
+    font-size: 60px;
+    border: 3px solid #007BFF;
+    box-shadow: 0 0 0 5px #90CAF9;
+    border-radius: 50%;
+    z-index: 3;
+    line-height: 1.4px;
+  }
+  
+  .footer-button.plus:hover {
+    background-color: #f0f8ff;
+  }
+  
+  .small-icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  

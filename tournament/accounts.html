@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accounts - Budget App</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    main.account-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 100px; /* bottom padding for footer */
+      background-color: #f9f9f9;
+      min-height: calc(100vh - 60px - 60px); /* approx height minus header/footer */
+    }
+
+    .account-user-image {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 16px;
+    }
+
+    .account-name {
+      font-size: 28px;
+      font-weight: bold;
+      color: black;
+      margin-bottom: 32px;
+    }
+
+    .account-buttons {
+      display: flex;
+      gap: 20px;
+    }
+
+    .btn {
+      padding: 12px 36px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 20px;
+      border: 2px solid #007BFF;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .login-btn {
+      background-color: white;
+      color: #007BFF;
+      border-color: #007BFF;
+    }
+    .login-btn:hover {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .signup-btn {
+      background-color: #007BFF;
+      color: white;
+      border-color: #007BFF;
+    }
+    .signup-btn:hover {
+      background-color: white;
+      color: #007BFF;
+      border-color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="images/user.png" alt="User" class="user-icon" />
+      <span class="user-name">Account</span>
+    </div>
+    <div class="header-center">
+      <img src="images/user.png" alt="App Logo" class="app-logo" />
+    </div>
+    <div class="header-right">
+      <button class="budget-amount" onclick="window.location.href='budget.html'">$2000</button>
+    </div>
+  </header>
+
+  <main class="account-main">
+    <img src="images/user.png" alt="User Image" class="account-user-image" />
+    <h1 class="account-name">Account</h1>
+
+    <div class="account-buttons">
+      <button class="btn login-btn">Login</button>
+      <button class="btn signup-btn">Sign Up</button>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-item">
+      <button class="footer-button home" onclick="window.location.href='homepage.html'">
+        <img src="images/home.png" alt="Home" class="small-icon" />
+      </button>
+    </div>
+
+    <div class="footer-item">
+      <button class="footer-button plus" onclick="window.location.href='createmenu.html'">+</button>
+    </div>
+
+    <div class="footer-item">
+      <button class="footer-button user" onclick="window.location.href='accounts.html'">
+        <img src="images/user.png" alt="User" class="small-icon" />
+      </button>
+    </div>
+  </footer>
+</body>
+</html>
