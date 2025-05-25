@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create - Budget App</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    main.create-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 100px;
+      background-color: #f9f9f9;
+      min-height: calc(100vh - 60px - 60px);
+      text-align: center;
+    }
+
+    .create-user-image {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 16px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .create-name {
+      font-size: 28px;
+      font-weight: bold;
+      color: black;
+      margin-bottom: 32px;
+    }
+
+    .create-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 36px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 20px;
+      border: 2px solid #007BFF;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .add-btn {
+      background-color: white;
+      color: #007BFF;
+      border-color: #007BFF;
+    }
+    .add-btn:hover {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #007BFF;
+      color: white;
+      border-color: #007BFF;
+    }
+    .delete-btn:hover {
+      background-color: white;
+      color: #007BFF;
+      border-color: #007BFF;
+    }
+
+    .item-form {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .item-form input {
+      padding: 12px;
+      font-size: 18px;
+      border: 2px solid #007BFF;
+      border-radius: 20px;
+      width: 200px;
+      margin: 5px;
+      color: #007BFF;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .item-card {
+      border: 2px solid #007BFF;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 10px;
+      width: 280px;
+      background-color: white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      position: relative;
+    }
+
+    .item-name {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .item-price {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      color: #007BFF;
+      font-weight: bold;
+    }
+
+    .edit-btn {
+      margin-top: 20px;
+      padding: 6px 16px;
+      border-radius: 10px;
+      border: 2px solid #007BFF;
+      background-color: white;
+      color: #007BFF;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .edit-btn:hover {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .delete-toggle {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 24px;
+      height: 24px;
+      border: 2px solid #007BFF;
+      border-radius: 50%;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .delete-toggle.active {
+      background-color: #007BFF;
+    }
+
+    .sync-status {
+      margin-top: 10px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .sync-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .sync-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .budget-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .budget-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .edit-name,
+    .edit-price {
+      padding: 8px;
+      font-size: 16px;
+      border: 2px solid #007BFF;
+      border-radius: 10px;
+      width: 120px;
+      margin: 2px;
+      color: #007BFF;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .budget-info {
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      background-color: white;
+      border: 2px solid #007BFF;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .budget-positive {
+      color: #28a745;
+    }
+
+    .budget-negative {
+      color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="/images/user.png" alt="User" class="user-icon" />
+      <span class="user-name">Create</span>
+    </div>
+    <div class="header-center">
+      <img src="/images/plus.png" alt="Create Icon" class="app-logo" />
+    </div>
+    <div class="header-right">
+      <button class="budget-amount" onclick="window.location.href='budget.html'">$0</button>
+    </div>
+  </header>
+
+  <main class="create-main">
+    <img src="/images/plus.png" alt="Plus Icon" class="create-user-image" />
+    <h1 class="create-name">Create</h1>
+    
+    <div class="create-buttons">
+      <button class="btn add-btn" onclick="showForm()">Add</button>
+      <button class="btn delete-btn" onclick="toggleDeleteMode()">Delete</button>
+      <button class="btn" id="cancelDeleteBtn" style="display:none;" onclick="cancelDeleteMode()">Cancel</button>
+    </div>
+
+    <div class="item-form" id="itemForm">
+      <input type="text" id="itemName" placeholder="Name (e.g. Bills)" />
+      <input type="number" id="itemPrice" placeholder="Price" />
+      <button class="btn add-btn" onclick="addItem()">Done</button>
+    </div>
+
+    <div id="syncStatus" class="sync-status" style="display:none;"></div>
+    <div id="itemsContainer"></div>
+  </main>
+
+  <footer>
+    <div class="footer-item">
+      <button class="footer-button home" onclick="window.location.href='homepage.html'">
+        <img src="/images/home.png" alt="Home" class="small-icon" />
+      </button>
+    </div>
+
+    <div class="footer-item">
+      <button class="footer-button plus" onclick="window.location.href='createmenu.html'">+</button>
+    </div>
+
+    <div class="footer-item">
+      <button class="footer-button user" onclick="window.location.href='accounts.html'">
+        <img src="/images/user.png" alt="User" class="small-icon" />
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    let tasks = [];
+    let deleteMode = false;
+    let currentBudget = 0;
+
+    // Show sync status message with auto-refresh option
+    function showSyncStatus(message, type, autoRefresh = false) {
+      const statusDiv = document.getElementById('syncStatus');
+      statusDiv.textContent = message;
+      statusDiv.className = `sync-status sync-${type}`;
+      statusDiv.style.display = 'block';
+      
+      if (autoRefresh) {
+        // Show message for 2 seconds, then refresh
+        setTimeout(() => {
+          statusDiv.textContent = message + ' - Refreshing page...';
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 3000);
+      }
+    }
+
+    // Update budget display
+    function updateBudgetDisplay() {
+      const budgetBtn = document.querySelector('.budget-amount');
+      const budgetRemaining = document.getElementById('budgetRemaining');
+      
+      if (budgetBtn) {
+        budgetBtn.textContent = `$${currentBudget.toFixed(2)}`;
+      }
+      
+      if (budgetRemaining) {
+        budgetRemaining.textContent = `Remaining Budget: $${currentBudget.toFixed(2)}`;
+        
+        if (currentBudget < 0) {
+          budgetRemaining.className = 'budget-remaining budget-negative';
+        } else if (currentBudget < 100) {
+          budgetRemaining.className = 'budget-remaining budget-warning';
+        } else {
+          budgetRemaining.className = 'budget-remaining budget-positive';
+        }
+      }
+    }
+
+    // Render all tasks
+    function renderTasks() {
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+      
+      tasks.forEach((task, index) => {
+        const taskDiv = document.createElement('div');
+        taskDiv.className = 'item-card';
+        taskDiv.setAttribute('data-task-id', task.id);
+        taskDiv.innerHTML = `
+          <div class="item-name">${task.name}</div>
+          <div class="item-price">$${parseFloat(task.price).toFixed(2)}</div>
+          <button class="edit-btn" onclick="editTask('${task.id}')">Edit</button>
+        `;
+
+        if (deleteMode) {
+          addDeleteToggle(taskDiv, task.id);
+        }
+
+        container.appendChild(taskDiv);
+      });
+    }
+
+    // Show add item form
+    function showForm() {
+      const form = document.getElementById('itemForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Add new task - SERVER HANDLES BUDGET CALCULATION
+    function addItem() {
+      const nameInput = document.getElementById('itemName');
+      const priceInput = document.getElementById('itemPrice');
+      
+      const name = nameInput.value.trim();
+      const price = parseFloat(priceInput.value);
+      
+      if (!name || isNaN(price) || price < 0) {
+        alert('Please enter a valid name and price');
+        return;
+      }
+      
+      // Check if user has enough budget
+      if (price > currentBudget) {
+        const proceed = confirm(`This item costs $${price.toFixed(2)} but you only have $${currentBudget.toFixed(2)} remaining. This will put you over budget. Continue?`);
+        if (!proceed) return;
+      }
+      
+      // Clear form immediately
+      nameInput.value = '';
+      priceInput.value = '';
+      document.getElementById('itemForm').style.display = 'none';
+      
+      // Show success message immediately
+      showSyncStatus(`Item "${name}" saved successfully! Refreshing page...`, 'success', true);
+      
+      // Server handles both task saving AND budget calculation
+      fetch('/save-task', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: name, price: price })
+      })
+      .catch(error => {
+        console.error('Error saving task:', error);
+      });
+    }
+
+    // Edit task - SERVER HANDLES BUDGET CALCULATION
+    function editTask(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      
+      const newName = prompt('Enter new name:', task.name);
+      const newPrice = prompt('Enter new price:', task.price);
+      
+      if (newName && !isNaN(newPrice) && parseFloat(newPrice) >= 0) {
+        const oldPrice = parseFloat(task.price);
+        const newPriceFloat = parseFloat(newPrice);
+        const priceDiff = newPriceFloat - oldPrice;
+        
+        if (priceDiff > 0 && priceDiff > currentBudget) {
+          const proceed = confirm(`Increasing price by $${priceDiff.toFixed(2)} will put you over budget. Continue?`);
+          if (!proceed) return;
+        }
+        
+        // Show success message immediately
+        showSyncStatus(`Item "${newName}" updated successfully! Refreshing page...`, 'success', true);
+        
+        // Server handles both task update AND budget calculation
+        fetch(`/update-task/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: newName.trim(), price: newPriceFloat })
+        })
+        .catch(error => {
+          console.error('Error updating task:', error);
+        });
+      }
+    }
+
+    // Add delete toggle to task
+    function addDeleteToggle(taskDiv, taskId) {
+      const toggle = document.createElement('div');
+      toggle.className = 'delete-toggle';
+      toggle.setAttribute('data-task-id', taskId);
+      toggle.onclick = function() {
+        toggle.classList.toggle('active');
+      };
+      taskDiv.appendChild(toggle);
+    }
+
+    // Toggle delete mode - SERVER HANDLES BUDGET CALCULATION
+    function toggleDeleteMode() {
+      deleteMode = !deleteMode;
+      
+      if (deleteMode) {
+        document.getElementById('cancelDeleteBtn').style.display = 'inline-block';
+      } else {
+        // Delete selected tasks
+        const activeToggles = document.querySelectorAll('.delete-toggle.active');
+        const tasksToDelete = [];
+        
+        activeToggles.forEach(toggle => {
+          const taskId = toggle.getAttribute('data-task-id');
+          if (taskId) {
+            tasksToDelete.push(taskId);
+          }
+        });
+        
+        if (tasksToDelete.length === 0) {
+          showSyncStatus('No items selected for deletion', 'error');
+          document.getElementById('cancelDeleteBtn').style.display = 'none';
+          renderTasks();
+          return;
+        }
+        
+        // Show success message immediately
+        const itemCount = tasksToDelete.length;
+        const itemText = itemCount === 1 ? 'item' : 'items';
+        showSyncStatus(`${itemCount} ${itemText} deleted successfully! Refreshing page...`, 'success', true);
+        
+        // Server handles both task deletion AND budget calculation
+        Promise.all(tasksToDelete.map(taskId => 
+          fetch(`/delete-task/${taskId}`, { method: 'DELETE' })
+        ))
+        .catch(error => {
+          console.error('Error deleting tasks:', error);
+        });
+        
+        document.getElementById('cancelDeleteBtn').style.display = 'none';
+      }
+      
+      renderTasks();
+    }
+
+    // Cancel delete mode
+    function cancelDeleteMode() {
+      deleteMode = false;
+      document.getElementById('cancelDeleteBtn').style.display = 'none';
+      renderTasks();
+    }
+
+    // Load tasks from server
+    function loadTasksFromServer() {
+      fetch('/get-tasks')
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to load tasks');
+          return response.json();
+        })
+        .then(data => {
+          tasks = data.tasks || [];
+          
+          // Also save to localStorage for homepage
+          localStorage.setItem('budgetAppItems', JSON.stringify(
+            tasks.map(task => ({
+              id: task.id,
+              name: task.name,
+              price: task.price,
+              createdAt: task.createdAt || new Date().toISOString()
+            }))
+          ));
+          
+          renderTasks();
+        })
+        .catch(error => {
+          console.error('Error loading tasks:', error);
+          tasks = [];
+          renderTasks();
+        });
+    }
+
+    // Load budget
+    function loadBudget() {
+      fetch('/get-budget')
+        .then(res => res.json())
+        .then(data => {
+          currentBudget = data.budget || 0;
+          updateBudgetDisplay();
+        })
+        .catch(error => {
+          console.error('Error loading budget:', error);
+          currentBudget = 0;
+          updateBudgetDisplay();
+        });
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      loadBudget();
+      loadTasksFromServer();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1748180558893",
+    "email": "admin@budget.com",
+    "password": "bcb15f821479b4d5772bd0ca866c00ad5f926e3580720659cc80d39c9d09802a",
+    "firstName": "admin",
+    "lastName": "administrator",
+    "avatar": null,
+    "isAdmin": true,
+    "createdAt": "2025-05-25T13:42:38.893Z"
+  },
+  {
+    "id": "1748181814306",
+    "email": "joewilliams@gmail.com",
+    "password": "62ba428e9161413a2873ce43c13551128f1c6c5599f40e38cd88ac14943da5dc",
+    "firstName": "Joe",
+    "lastName": "Williams",
+    "avatar": null,
+    "isAdmin": false,
+    "createdAt": "2025-05-25T14:03:34.306Z"
+  }
+]

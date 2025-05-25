@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget - Budget App</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    main.budget-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 100px;
+      background-color: #f9f9f9;
+      min-height: calc(100vh - 60px - 60px);
+      text-align: center;
+    }
+
+    .budget-image {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 16px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .budget-name {
+      font-size: 28px;
+      font-weight: bold;
+      color: black;
+      margin-bottom: 32px;
+    }
+
+    .budget-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 36px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 20px;
+      border: 2px solid #007BFF;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .add-btn {
+      background-color: white;
+      color: #007BFF;
+      border-color: #007BFF;
+    }
+    .add-btn:hover {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .reset-btn {
+      background-color: #007BFF;
+      color: white;
+      border-color: #007BFF;
+    }
+    .reset-btn:hover {
+      background-color: white;
+      color: #007BFF;
+      border-color: #007BFF;
+    }
+
+    /* Input styled like budget amount button */
+    .budget-input {
+      margin-bottom: 20px;
+      padding: 10px 16px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 20px;
+      border: 2px solid #007BFF;
+      color: #007BFF;
+      width: 150px;
+      text-align: center;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .budget-display {
+      padding: 12px 36px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 20px;
+      border: 2px solid #007BFF;
+      color: #007BFF;
+      min-width: 120px;
+      text-align: center;
+      user-select: none;
+      background-color: white;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="images/user.png" alt="User" class="user-icon" />
+      <span class="user-name">Budget</span>
+    </div>
+    <div class="header-center">
+      <img src="images/budget.png" alt="Budget Icon" class="app-logo" />
+    </div>
+    <div class="header-right">
+      <button class="budget-amount" id="budgetAmountBtn" onclick="window.location.href='budget.html'">$0</button>
+    </div>
+  </header>
+
+  <main class="budget-main">
+    <img src="images/budget.png" alt="Budget Icon" class="budget-image" />
+    <h1 class="budget-name">Budget</h1>
+
+    <div class="budget-buttons">
+      <button class="btn add-btn" id="addBtn">Add</button>
+      <button class="btn reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <input type="number" min="0" id="budgetInput" class="budget-input" placeholder="Amount" />
+
+    <div class="budget-display" id="budgetDisplay">$0</div>
+  </main>
+
+  <footer>
+    <div class="footer-item">
+      <button class="footer-button home" onclick="window.location.href='homepage.html'">
+        <img src="images/home.png" alt="Home" class="small-icon" />
+      </button>
+    </div>
+
+    <div class="footer-item">
+      <button class="footer-button plus" onclick="window.location.href='createmenu.html'">+</button>
+    </div>
+
+    <div class="footer-item">
+      <button class="footer-button user" onclick="window.location.href='accounts.html'">
+        <img src="images/user.png" alt="User" class="small-icon" />
+      </button>
+    </div>
+  </footer>
+  <script>
+  const budgetInput = document.getElementById('budgetInput');
+  const budgetDisplay = document.getElementById('budgetDisplay');
+  const budgetAmountBtn = document.getElementById('budgetAmountBtn');
+  const addBtn = document.getElementById('addBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let currentBudget = 0;
+
+  function updateBudgetDisplay() {
+    const formatted = `$${currentBudget.toFixed(2)}`;
+    budgetDisplay.textContent = formatted;
+    budgetAmountBtn.textContent = formatted;
+  }
+
+  function saveBudgetOnServer() {
+    fetch('/save-budget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ budget: currentBudget }),
+    }).catch(err => console.error('Error saving budget:', err));
+  }
+
+  addBtn.addEventListener('click', () => {
+    const value = parseFloat(budgetInput.value);
+    if (!isNaN(value) && value > 0) {
+      currentBudget += value;
+      updateBudgetDisplay();
+      saveBudgetOnServer();
+      budgetInput.value = '';
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    currentBudget = 0;
+    updateBudgetDisplay();
+    saveBudgetOnServer();
+  });
+
+  // On page load, get saved budget from server
+  fetch('/get-budget')
+    .then(res => res.json())
+    .then(data => {
+      currentBudget = data.budget || 0;
+      updateBudgetDisplay();
+    })
+    .catch(() => {
+      currentBudget = 0;
+      updateBudgetDisplay();
+    });
+</script>
+</body>
+</html>

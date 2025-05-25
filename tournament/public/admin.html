@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard - Budget App</title>
+<link rel="stylesheet" href="/css/style.css" />
+<style>
+  .admin-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .admin-header {
+    background: linear-gradient(135deg, #007BFF, #0056b3);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #007BFF;
+  }
+
+  .stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: #007BFF;
+  }
+
+  .stat-label {
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .users-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  .table-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: bold;
+  }
+
+  .user-row {
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 120px;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .user-row:hover {
+    background: #f8f9fa;
+  }
+
+  .user-email {
+    font-weight: 500;
+  }
+
+  .admin-badge {
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 5px;
+  }
+
+  .btn-small {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn-edit {
+    background: #007BFF;
+    color: white;
+  }
+
+  .btn-delete {
+    background: #dc3545;
+    color: white;
+  }
+
+  .btn-logout {
+    background: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }
+
+  .error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage all user accounts and budgets</p>
+  </div>
+
+  <div id="loadingMessage" class="loading">Loading admin data...</div>
+  <div id="errorMessage" class="error" style="display: none;"></div>
+
+  <div id="adminContent" style="display: none;">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalUsers">0</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalBudget">$0</div>
+        <div class="stat-label">Total Budget</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalTasks">0</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalSpent">$0</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+    </div>
+
+    <div class="users-table">
+      <div class="table-header">User Management</div>
+      <div class="user-row" style="background: #e9ecef; font-weight: bold;">
+        <div>Email</div>
+        <div>Budget</div>
+        <div>Tasks</div>
+        <div>Spent</div>
+        <div>Status</div>
+        <div>Actions</div>
+      </div>
+      <div id="usersContainer"></div>
+    </div>
+
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    checkAdminAccess();
+  });
+
+  function checkAdminAccess() {
+    fetch('/check-session')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.loggedIn || !data.isAdmin) {
+          window.location.href = 'accounts.html';
+          return;
+        }
+        loadAdminData();
+      })
+      .catch(error => {
+        console.error('Session check error:', error);
+        window.location.href = 'accounts.html';
+      });
+  }
+
+  function loadAdminData() {
+    fetch('/admin/users')
+      .then(res => res.json())
+      .then(data => {
+        if (data.users) {
+          displayUsers(data.users);
+          updateStats(data.users);
+          document.getElementById('loadingMessage').style.display = 'none';
+          document.getElementById('adminContent').style.display = 'block';
+        } else {
+          showError('Failed to load user data');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading admin data:', error);
+        showError('Failed to load admin data');
+      });
+  }
+
+  function displayUsers(users) {
+    const container = document.getElementById('usersContainer');
+    container.innerHTML = '';
+
+    users.forEach(user => {
+      const userRow = document.createElement('div');
+      userRow.className = 'user-row';
+      userRow.innerHTML = `
+        <div class="user-email">
+          ${user.email}
+          ${user.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+        </div>
+        <div>$${user.budget.toFixed(2)}</div>
+        <div>${user.taskCount}</div>
+        <div>$${user.totalSpent.toFixed(2)}</div>
+        <div>${new Date(user.createdAt).toLocaleDateString()}</div>
+        <div class="action-buttons">
+          <button class="btn-small btn-edit" onclick="editUserBudget('${user.id}', ${user.budget})">Edit</button>
+          ${!user.isAdmin ? `<button class="btn-small btn-delete" onclick="deleteUser('${user.id}', '${user.email}')">Delete</button>` : ''}
+        </div>
+      `;
+      container.appendChild(userRow);
+    });
+  }
+
+  function updateStats(users) {
+    const totalUsers = users.length;
+    const totalBudget = users.reduce((sum, user) => sum + user.budget, 0);
+    const totalTasks = users.reduce((sum, user) => sum + user.taskCount, 0);
+    const totalSpent = users.reduce((sum, user) => sum + user.totalSpent, 0);
+
+    document.getElementById('totalUsers').textContent = totalUsers;
+    document.getElementById('totalBudget').textContent = `$${totalBudget.toFixed(2)}`;
+    document.getElementById('totalTasks').textContent = totalTasks;
+    document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
+  }
+
+  function editUserBudget(userId, currentBudget) {
+    const newBudget = prompt(`Enter new budget for user:`, currentBudget);
+    if (newBudget !== null && !isNaN(newBudget)) {
+      fetch(`/admin/user/${userId}/budget`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ budget: parseFloat(newBudget) })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          loadAdminData(); // Refresh the data
+        } else {
+          alert('Failed to update budget');
+        }
+      })
+      .catch(error => {
+        console.error('Error updating budget:', error);
+        alert('Failed to update budget');
+      });
+    }
+  }
+
+  function deleteUser(userId, email) {
+    if (confirm(`Are you sure you want to delete user: ${email}?`)) {
+      fetch(`/admin/user/${userId}`, {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          loadAdminData(); // Refresh the data
+        } else {
+          alert('Failed to delete user');
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting user:', error);
+        alert('Failed to delete user');
+      });
+    }
+  }
+
+  function logout() {
+    fetch('/logout', { method: 'POST' })
+      .then(() => {
+        window.location.href = 'accounts.html';
+      })
+      .catch(error => {
+        console.error('Logout error:', error);
+        window.location.href = 'accounts.html';
+      });
+  }
+
+  function showError(message) {
+    document.getElementById('loadingMessage').style.display = 'none';
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('errorMessage').style.display = 'block';
+  }
+</script>
+</body>
+</html>
