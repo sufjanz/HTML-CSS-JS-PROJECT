@@ -7,7 +7,9 @@ const multer = require("multer")
 const app = express()
 const port = 3000
 
-app.use(express.json())
+// IMPORTANT: Increase JSON payload limit for base64 images
+app.use(express.json({ limit: "50mb" }))
+app.use(express.urlencoded({ limit: "50mb", extended: true }))
 app.use(express.static("public"))
 
 // Configure multer for avatar uploads
@@ -73,10 +75,20 @@ function readUsers() {
 
 function writeUsers(users) {
   try {
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2))
+    console.log("Writing", users.length, "users to file:", usersFile)
+    const jsonData = JSON.stringify(users, null, 2)
+    console.log("JSON data length:", jsonData.length, "characters")
+
+    fs.writeFileSync(usersFile, jsonData)
+    console.log("✅ Users file written successfully")
     return true
   } catch (error) {
-    console.error("Error writing users:", error)
+    console.error("❌ Error writing users file:", error)
+    console.error("Error details:", {
+      code: error.code,
+      errno: error.errno,
+      path: error.path,
+    })
     return false
   }
 }
@@ -211,6 +223,8 @@ app.post("/login", (req, res) => {
       message: "Login successful",
       userId: user.id,
       isAdmin: user.isAdmin,
+      firstName: user.firstName,
+      lastName: user.lastName,
     })
   } else {
     res.status(401).json({ success: false, message: "Invalid email or password" })
@@ -250,7 +264,78 @@ app.get("/check-session", (req, res) => {
   }
 })
 
-// Avatar upload endpoint
+// NEW: Save avatar as base64 data directly to user account
+app.post("/save-avatar", requireAuth, (req, res) => {
+  console.log("=== AVATAR SAVE REQUEST ===")
+  console.log("User ID:", req.session.userId)
+  console.log("Request body keys:", Object.keys(req.body))
+
+  const { avatar } = req.body
+
+  if (!avatar) {
+    console.log("❌ No avatar data provided")
+    return res.status(400).json({ success: false, message: "No avatar data provided" })
+  }
+
+  console.log("Avatar data length:", avatar.length)
+  console.log("Avatar starts with:", avatar.substring(0, 50))
+
+  // More flexible validation for base64 images
+  if (!avatar.startsWith("data:image/")) {
+    console.log("❌ Invalid image format - doesn't start with data:image/")
+    return res.status(400).json({ success: false, message: "Invalid image format. Please select a valid image file." })
+  }
+
+  try {
+    // Check if the base64 string is too large (limit to ~5MB when encoded)
+    if (avatar.length > 7000000) {
+      console.log("❌ Image too large:", avatar.length, "characters")
+      return res.status(400).json({ success: false, message: "Image too large. Please use a smaller image (max 5MB)." })
+    }
+
+    console.log("📖 Reading users file...")
+    const users = readUsers()
+    console.log("Users loaded:", users.length, "users found")
+
+    const userIndex = users.findIndex((u) => u.id === req.session.userId)
+
+    if (userIndex === -1) {
+      console.log("❌ User not found in database:", req.session.userId)
+      return res.status(404).json({ success: false, message: "User account not found" })
+    }
+
+    console.log("✅ User found:", users[userIndex].email)
+    console.log("💾 Updating avatar for user...")
+
+    // Update user with new avatar
+    users[userIndex].avatar = avatar
+    users[userIndex].avatarUpdated = new Date().toISOString()
+
+    console.log("💿 Writing users file...")
+    const writeSuccess = writeUsers(users)
+
+    if (writeSuccess) {
+      console.log("✅ Avatar saved successfully for user", req.session.userId)
+      res.json({
+        success: true,
+        message: "Avatar saved successfully",
+        avatarLength: avatar.length,
+      })
+    } else {
+      console.error("❌ Failed to write users file")
+      res.status(500).json({ success: false, message: "Failed to save avatar to database. Please try again." })
+    }
+  } catch (error) {
+    console.error("❌ Error saving avatar:", error)
+    console.error("Error stack:", error.stack)
+    res.status(500).json({
+      success: false,
+      message: "Server error while saving avatar: " + error.message,
+    })
+  }
+})
+
+// Avatar upload endpoint (existing file upload method)
 app.post("/upload-avatar", requireAuth, upload.single("avatar"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: "No file uploaded" })
@@ -263,8 +348,8 @@ app.post("/upload-avatar", requireAuth, upload.single("avatar"), (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" })
   }
 
-  // Delete old avatar if exists
-  if (users[userIndex].avatar) {
+  // Delete old avatar if exists and it's a file path (not base64)
+  if (users[userIndex].avatar && users[userIndex].avatar.startsWith("/uploads/")) {
     const oldAvatarPath = path.join(__dirname, "public", users[userIndex].avatar)
     if (fs.existsSync(oldAvatarPath)) {
       fs.unlinkSync(oldAvatarPath)
@@ -488,9 +573,9 @@ app.delete("/admin/user/:id", requireAdmin, (req, res) => {
     if (fs.existsSync(budgetFile)) fs.unlinkSync(budgetFile)
     if (fs.existsSync(tasksFile)) fs.unlinkSync(tasksFile)
 
-    // Delete user avatar if exists
+    // Delete user avatar if exists and it's a file path (not base64)
     const user = users[userIndex]
-    if (user && user.avatar) {
+    if (user && user.avatar && user.avatar.startsWith("/uploads/")) {
       const avatarPath = path.join(__dirname, "public", user.avatar)
       if (fs.existsSync(avatarPath)) {
         fs.unlinkSync(avatarPath)

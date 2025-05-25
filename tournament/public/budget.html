@@ -101,6 +101,40 @@
       background-color: white;
       margin-top: 0;
     }
+
+    /* Success message styling */
+    .success-message {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 10px 20px;
+      border-radius: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      padding: 10px 20px;
+      border-radius: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .debug-info {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-size: 12px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -129,6 +163,10 @@
     <input type="number" min="0" id="budgetInput" class="budget-input" placeholder="Amount" />
 
     <div class="budget-display" id="budgetDisplay">$0</div>
+    
+    <div class="success-message" id="successMessage">Budget saved successfully!</div>
+    <div class="error-message" id="errorMessage">Error saving budget. Please try again.</div>
+    <div class="debug-info" id="debugInfo"></div>
   </main>
 
   <footer>
@@ -148,56 +186,264 @@
       </button>
     </div>
   </footer>
+
   <script>
-  const budgetInput = document.getElementById('budgetInput');
-  const budgetDisplay = document.getElementById('budgetDisplay');
-  const budgetAmountBtn = document.getElementById('budgetAmountBtn');
-  const addBtn = document.getElementById('addBtn');
-  const resetBtn = document.getElementById('resetBtn');
+    const budgetInput = document.getElementById('budgetInput');
+    const budgetDisplay = document.getElementById('budgetDisplay');
+    const budgetAmountBtn = document.getElementById('budgetAmountBtn');
+    const addBtn = document.getElementById('addBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const debugInfo = document.getElementById('debugInfo');
 
-  let currentBudget = 0;
+    let currentBudget = 0;
+    let totalSpent = 0;
+    let isLoggedIn = false;
 
-  function updateBudgetDisplay() {
-    const formatted = `$${currentBudget.toFixed(2)}`;
-    budgetDisplay.textContent = formatted;
-    budgetAmountBtn.textContent = formatted;
-  }
-
-  function saveBudgetOnServer() {
-    fetch('/save-budget', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ budget: currentBudget }),
-    }).catch(err => console.error('Error saving budget:', err));
-  }
-
-  addBtn.addEventListener('click', () => {
-    const value = parseFloat(budgetInput.value);
-    if (!isNaN(value) && value > 0) {
-      currentBudget += value;
-      updateBudgetDisplay();
-      saveBudgetOnServer();
-      budgetInput.value = '';
+    function updateBudgetDisplay() {
+      const formatted = `$${currentBudget.toFixed(2)}`;
+      budgetDisplay.textContent = formatted;
+      
+      // Update header button with remaining amount
+      const remaining = currentBudget - totalSpent;
+      budgetAmountBtn.textContent = `$${remaining.toFixed(2)}`;
     }
-  });
 
-  resetBtn.addEventListener('click', () => {
-    currentBudget = 0;
-    updateBudgetDisplay();
-    saveBudgetOnServer();
-  });
+    function loadRemainingBudget() {
+      Promise.all([
+        fetch('/get-budget').then(res => res.json()).catch(() => ({ budget: 0 })),
+        fetch('/get-tasks').then(res => res.json()).catch(() => ({ tasks: [] }))
+      ])
+      .then(([budgetData, tasksData]) => {
+        currentBudget = budgetData.budget || 0;
+        const tasks = tasksData.tasks || [];
+        totalSpent = tasks.reduce((sum, task) => sum + parseFloat(task.price || 0), 0);
+        updateBudgetDisplay();
+      })
+      .catch(() => {
+        currentBudget = 0;
+        totalSpent = 0;
+        updateBudgetDisplay();
+      });
+    }
 
-  // On page load, get saved budget from server
-  fetch('/get-budget')
-    .then(res => res.json())
-    .then(data => {
-      currentBudget = data.budget || 0;
+    function showMessage(type, message, debug = null) {
+      // Hide all messages first
+      successMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+      debugInfo.style.display = 'none';
+      
+      if (type === 'success') {
+        successMessage.textContent = message;
+        successMessage.style.display = 'block';
+        setTimeout(() => {
+          successMessage.style.display = 'none';
+        }, 3000);
+      } else if (type === 'error') {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        
+        if (debug) {
+          debugInfo.textContent = `Debug: ${debug}`;
+          debugInfo.style.display = 'block';
+        }
+        
+        setTimeout(() => {
+          errorMessage.style.display = 'none';
+          debugInfo.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    function checkSession() {
+      return fetch('/check-session')
+        .then(res => res.json())
+        .then(data => {
+          isLoggedIn = data.loggedIn;
+          if (!isLoggedIn) {
+            showMessage('error', 'Please log in first', 'Not authenticated');
+            setTimeout(() => {
+              window.location.href = 'accounts.html';
+            }, 2000);
+            return false;
+          }
+
+          // Add admin access if user is admin
+          fetch('/check-session')
+            .then(res => res.json())
+            .then(sessionData => {
+              if (sessionData.isAdmin) {
+                const userIcon = document.querySelector('.user-icon');
+                if (userIcon) {
+                  userIcon.style.cursor = 'pointer';
+                  userIcon.title = 'Click to access Admin Dashboard';
+                  userIcon.onclick = () => window.location.href = 'admin.html';
+                }
+              }
+            })
+            .catch(err => console.log('Admin check failed:', err));
+
+          return true;
+        })
+        .catch(error => {
+          console.error('Session check error:', error);
+          showMessage('error', 'Session check failed', error.message);
+          return false;
+        });
+    }
+
+    function saveBudgetOnServer() {
+      console.log('Attempting to save budget:', currentBudget);
+      
+      return fetch('/save-budget', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ budget: currentBudget }),
+      })
+      .then(response => {
+        console.log('Server response status:', response.status);
+        
+        if (response.status === 401) {
+          throw new Error('Not authenticated - please log in');
+        }
+        
+        if (response.status === 400) {
+          throw new Error('Invalid budget amount');
+        }
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        
+        return response.json();
+      })
+      .then(data => {
+        console.log('Save successful:', data);
+        showMessage('success', 'Budget saved successfully!');
+        // Reload remaining budget after saving
+        loadRemainingBudget();
+        return data;
+      })
+      .catch(err => {
+        console.error('Error saving budget:', err);
+        
+        if (err.message.includes('Not authenticated')) {
+          showMessage('error', 'Please log in to save budget', 'Authentication required');
+          setTimeout(() => {
+            window.location.href = 'accounts.html';
+          }, 2000);
+        } else {
+          showMessage('error', 'Error saving budget. Please try again.', err.message);
+        }
+        
+        throw err;
+      });
+    }
+
+    addBtn.addEventListener('click', async () => {
+      const value = parseFloat(budgetInput.value);
+      
+      if (!budgetInput.value.trim()) {
+        showMessage('error', 'Please enter an amount');
+        return;
+      }
+      
+      if (isNaN(value) || value <= 0) {
+        showMessage('error', 'Please enter a valid amount greater than 0');
+        return;
+      }
+      
+      // Check if user is logged in first
+      const sessionValid = await checkSession();
+      if (!sessionValid) {
+        return;
+      }
+      
+      // Disable button while saving
+      addBtn.disabled = true;
+      addBtn.textContent = 'Saving...';
+      
+      const newBudget = currentBudget + value;
+      
+      // Temporarily update display
+      const oldBudget = currentBudget;
+      currentBudget = newBudget;
       updateBudgetDisplay();
-    })
-    .catch(() => {
+      
+      // Save to server
+      saveBudgetOnServer()
+        .then(() => {
+          // Clear input on success
+          budgetInput.value = '';
+        })
+        .catch(() => {
+          // Revert on error
+          currentBudget = oldBudget;
+          updateBudgetDisplay();
+        })
+        .finally(() => {
+          // Re-enable button
+          addBtn.disabled = false;
+          addBtn.textContent = 'Add';
+        });
+    });
+
+    resetBtn.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to reset your budget to $0?')) {
+        return;
+      }
+      
+      // Check if user is logged in first
+      const sessionValid = await checkSession();
+      if (!sessionValid) {
+        return;
+      }
+      
+      // Disable button while saving
+      resetBtn.disabled = true;
+      resetBtn.textContent = 'Resetting...';
+      
+      const oldBudget = currentBudget;
       currentBudget = 0;
       updateBudgetDisplay();
+      
+      saveBudgetOnServer()
+        .then(() => {
+          showMessage('success', 'Budget reset successfully!');
+        })
+        .catch(() => {
+          // Revert on error
+          currentBudget = oldBudget;
+          updateBudgetDisplay();
+        })
+        .finally(() => {
+          // Re-enable button
+          resetBtn.disabled = false;
+          resetBtn.textContent = 'Reset';
+        });
     });
-</script>
+
+    // Allow Enter key to add budget
+    budgetInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addBtn.click();
+      }
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Check session first
+      const sessionValid = await checkSession();
+      if (!sessionValid) {
+        return;
+      }
+      
+      // Load budget and remaining amount
+      loadRemainingBudget();
+    });
+  </script>
 </body>
 </html>

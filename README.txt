@@ -1,0 +1,1 @@
+The original idea was to make an app to control our money for every month and compare them at the end of the month with each other with AI to tell you which were nesscesary and which were not and also differentiate priorities of different products but i wasn't able to do that beacuse of the complexity and time limit!

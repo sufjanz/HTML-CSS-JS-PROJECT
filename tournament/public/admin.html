@@ -6,10 +6,19 @@
 <title>Admin Dashboard - Budget App</title>
 <link rel="stylesheet" href="/css/style.css" />
 <style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    font-family: Arial, sans-serif;
+  }
+
   .admin-container {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    margin-top: 80px; /* Account for header */
+    margin-bottom: 100px; /* Account for footer */
   }
 
   .admin-header {
@@ -19,6 +28,16 @@
     border-radius: 10px;
     margin-bottom: 30px;
     text-align: center;
+  }
+
+  .admin-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.5em;
+  }
+
+  .admin-header p {
+    margin: 0;
+    opacity: 0.9;
   }
 
   .stats-grid {
@@ -34,17 +53,20 @@
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     border-left: 4px solid #007BFF;
+    text-align: center;
   }
 
   .stat-number {
     font-size: 2em;
     font-weight: bold;
     color: #007BFF;
+    margin-bottom: 5px;
   }
 
   .stat-label {
     color: #666;
     margin-top: 5px;
+    font-size: 0.9em;
   }
 
   .users-table {
@@ -59,6 +81,20 @@
     padding: 15px 20px;
     border-bottom: 1px solid #dee2e6;
     font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+  }
+
+  .table-columns {
+    background: #e9ecef;
+    padding: 10px 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 120px;
+    gap: 15px;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
   }
 
   .user-row {
@@ -68,14 +104,22 @@
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr 120px;
     gap: 15px;
     align-items: center;
+    transition: background-color 0.2s;
   }
 
   .user-row:hover {
     background: #f8f9fa;
   }
 
+  .user-row:last-child {
+    border-bottom: none;
+  }
+
   .user-email {
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .admin-badge {
@@ -83,7 +127,8 @@
     color: white;
     padding: 2px 8px;
     border-radius: 12px;
-    font-size: 0.8em;
+    font-size: 0.7em;
+    font-weight: bold;
   }
 
   .action-buttons {
@@ -97,6 +142,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.2s;
   }
 
   .btn-edit {
@@ -104,9 +150,17 @@
     color: white;
   }
 
+  .btn-edit:hover {
+    background: #0056b3;
+  }
+
   .btn-delete {
     background: #dc3545;
     color: white;
+  }
+
+  .btn-delete:hover {
+    background: #c82333;
   }
 
   .btn-logout {
@@ -117,12 +171,33 @@
     border-radius: 5px;
     cursor: pointer;
     margin-top: 20px;
+    transition: background-color 0.2s;
+  }
+
+  .btn-logout:hover {
+    background: #5a6268;
+  }
+
+  .refresh-btn {
+    background: #28a745;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 15px;
+  }
+
+  .refresh-btn:hover {
+    background: #218838;
   }
 
   .loading {
     text-align: center;
     padding: 40px;
     color: #666;
+    font-size: 1.1em;
   }
 
   .error {
@@ -131,194 +206,387 @@
     padding: 15px;
     border-radius: 5px;
     margin: 20px 0;
+    border: 1px solid #f5c6cb;
+  }
+
+  .success {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+    border: 1px solid #c3e6cb;
+  }
+
+  .no-users {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .admin-container {
+      padding: 10px;
+      margin-top: 70px;
+    }
+
+    .table-columns,
+    .user-row {
+      grid-template-columns: 1fr;
+      gap: 5px;
+      text-align: left;
+    }
+
+    .table-columns {
+      display: none; /* Hide column headers on mobile */
+    }
+
+    .user-row {
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .user-email::before { content: "Email: "; font-weight: bold; }
+    .user-row > div:nth-child(2)::before { content: "Budget: $"; font-weight: bold; }
+    .user-row > div:nth-child(3)::before { content: "Tasks: "; font-weight: bold; }
+    .user-row > div:nth-child(4)::before { content: "Spent: $"; font-weight: bold; }
+    .user-row > div:nth-child(5)::before { content: "Joined: "; font-weight: bold; }
+  }
+
+  .header-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .header-right .budget-amount {
+    min-width: auto;
+    padding: 8px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    color: white;
+  }
+
+  .home-btn {
+    background: #28a745;
+    color: white;
+    border: 2px solid #28a745;
+  }
+
+  .home-btn:hover {
+    background: #218838;
+    color: white;
+  }
+
+  .logout-btn-header {
+    background: #dc3545;
+    color: white;
+    border: 2px solid #dc3545;
+  }
+
+  .logout-btn-header:hover {
+    background: #c82333;
+    color: white;
   }
 </style>
 </head>
 <body>
-<div class="admin-container">
-  <div class="admin-header">
-    <h1>Admin Dashboard</h1>
-    <p>Manage all user accounts and budgets</p>
-  </div>
+  <header class="app-header">
+    <div class="header-left">
+      <img src="/images/user.png" alt="User" class="user-icon" />
+      <span class="user-name" id="adminName">Admin</span>
+    </div>
+    <div class="header-center">
+      <img src="/images/admin.png" alt="Admin Icon" class="app-logo" />
+    </div>
+    <div class="header-right">
+      <button class="budget-amount home-btn" onclick="window.location.href='homepage.html'">Home</button>
+      <button class="budget-amount logout-btn-header" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-  <div id="loadingMessage" class="loading">Loading admin data...</div>
-  <div id="errorMessage" class="error" style="display: none;"></div>
-
-  <div id="adminContent" style="display: none;">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-number" id="totalUsers">0</div>
-        <div class="stat-label">Total Users</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="totalBudget">$0</div>
-        <div class="stat-label">Total Budget</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="totalTasks">0</div>
-        <div class="stat-label">Total Tasks</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="totalSpent">$0</div>
-        <div class="stat-label">Total Spent</div>
-      </div>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>🛡️ Admin Dashboard</h1>
+      <p>Manage all user accounts and budgets</p>
     </div>
 
-    <div class="users-table">
-      <div class="table-header">User Management</div>
-      <div class="user-row" style="background: #e9ecef; font-weight: bold;">
-        <div>Email</div>
-        <div>Budget</div>
-        <div>Tasks</div>
-        <div>Spent</div>
-        <div>Status</div>
-        <div>Actions</div>
+    <div id="loadingMessage" class="loading">Loading admin data...</div>
+    <div id="errorMessage" class="error" style="display: none;"></div>
+    <div id="successMessage" class="success" style="display: none;"></div>
+
+    <div id="adminContent" style="display: none;">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalBudget">$0</div>
+          <div class="stat-label">Total Budget</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalTasks">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalSpent">$0</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
       </div>
-      <div id="usersContainer"></div>
+
+      <div class="users-table">
+        <div class="table-header">
+          User Management
+          <button class="refresh-btn" onclick="loadAdminData()">🔄 Refresh</button>
+        </div>
+        <div class="table-columns">
+          <div>Email</div>
+          <div>Budget</div>
+          <div>Tasks</div>
+          <div>Spent</div>
+          <div>Status</div>
+          <div>Actions</div>
+        </div>
+        <div id="usersContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-item">
+      <button class="footer-button home" onclick="window.location.href='homepage.html'">
+        <img src="/images/home.png" alt="Home" class="small-icon" />
+      </button>
     </div>
 
-    <button class="btn-logout" onclick="logout()">Logout</button>
-  </div>
-</div>
+    <div class="footer-item">
+      <button class="footer-button plus" onclick="window.location.href='createmenu.html'">+</button>
+    </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    checkAdminAccess();
-  });
+    <div class="footer-item">
+      <button class="footer-button user" onclick="window.location.href='accounts.html'">
+        <img src="/images/user.png" alt="User" class="small-icon" />
+      </button>
+    </div>
+  </footer>
 
-  function checkAdminAccess() {
-    fetch('/check-session')
-      .then(res => res.json())
-      .then(data => {
-        if (!data.loggedIn || !data.isAdmin) {
-          window.location.href = 'accounts.html';
-          return;
-        }
-        loadAdminData();
-      })
-      .catch(error => {
-        console.error('Session check error:', error);
-        window.location.href = 'accounts.html';
-      });
-  }
+  <script>
+    let users = [];
 
-  function loadAdminData() {
-    fetch('/admin/users')
-      .then(res => res.json())
-      .then(data => {
-        if (data.users) {
-          displayUsers(data.users);
-          updateStats(data.users);
-          document.getElementById('loadingMessage').style.display = 'none';
-          document.getElementById('adminContent').style.display = 'block';
-        } else {
-          showError('Failed to load user data');
-        }
-      })
-      .catch(error => {
-        console.error('Error loading admin data:', error);
-        showError('Failed to load admin data');
-      });
-  }
-
-  function displayUsers(users) {
-    const container = document.getElementById('usersContainer');
-    container.innerHTML = '';
-
-    users.forEach(user => {
-      const userRow = document.createElement('div');
-      userRow.className = 'user-row';
-      userRow.innerHTML = `
-        <div class="user-email">
-          ${user.email}
-          ${user.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
-        </div>
-        <div>$${user.budget.toFixed(2)}</div>
-        <div>${user.taskCount}</div>
-        <div>$${user.totalSpent.toFixed(2)}</div>
-        <div>${new Date(user.createdAt).toLocaleDateString()}</div>
-        <div class="action-buttons">
-          <button class="btn-small btn-edit" onclick="editUserBudget('${user.id}', ${user.budget})">Edit</button>
-          ${!user.isAdmin ? `<button class="btn-small btn-delete" onclick="deleteUser('${user.id}', '${user.email}')">Delete</button>` : ''}
-        </div>
-      `;
-      container.appendChild(userRow);
+    document.addEventListener('DOMContentLoaded', function() {
+      checkAdminAccess();
     });
-  }
 
-  function updateStats(users) {
-    const totalUsers = users.length;
-    const totalBudget = users.reduce((sum, user) => sum + user.budget, 0);
-    const totalTasks = users.reduce((sum, user) => sum + user.taskCount, 0);
-    const totalSpent = users.reduce((sum, user) => sum + user.totalSpent, 0);
+    function checkAdminAccess() {
+      fetch('/check-session')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.loggedIn) {
+            showError('Please log in to access admin panel');
+            setTimeout(() => {
+              window.location.href = 'accounts.html';
+            }, 2000);
+            return;
+          }
 
-    document.getElementById('totalUsers').textContent = totalUsers;
-    document.getElementById('totalBudget').textContent = `$${totalBudget.toFixed(2)}`;
-    document.getElementById('totalTasks').textContent = totalTasks;
-    document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
-  }
+          if (!data.isAdmin) {
+            showError('Access denied. Admin privileges required.');
+            setTimeout(() => {
+              window.location.href = 'homepage.html';
+            }, 2000);
+            return;
+          }
 
-  function editUserBudget(userId, currentBudget) {
-    const newBudget = prompt(`Enter new budget for user:`, currentBudget);
-    if (newBudget !== null && !isNaN(newBudget)) {
+          // Update admin name
+          document.getElementById('adminName').textContent = data.firstName || 'Admin';
+          
+          // Load admin data
+          loadAdminData();
+        })
+        .catch(error => {
+          console.error('Session check error:', error);
+          showError('Failed to verify admin access');
+          setTimeout(() => {
+            window.location.href = 'accounts.html';
+          }, 2000);
+        });
+    }
+
+    function loadAdminData() {
+      document.getElementById('loadingMessage').style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('successMessage').style.display = 'none';
+      document.getElementById('adminContent').style.display = 'none';
+
+      fetch('/admin/users')
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (data.users) {
+            users = data.users;
+            displayUsers(data.users);
+            updateStats(data.users);
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+          } else {
+            throw new Error('No user data received');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading admin data:', error);
+          showError('Failed to load admin data: ' + error.message);
+          document.getElementById('loadingMessage').style.display = 'none';
+        });
+    }
+
+    function displayUsers(users) {
+      const container = document.getElementById('usersContainer');
+      container.innerHTML = '';
+
+      if (users.length === 0) {
+        container.innerHTML = '<div class="no-users">No users found</div>';
+        return;
+      }
+
+      users.forEach(user => {
+        const userRow = document.createElement('div');
+        userRow.className = 'user-row';
+        
+        const remaining = (user.budget || 0) - (user.totalSpent || 0);
+        const spentColor = remaining < 0 ? '#dc3545' : '#28a745';
+        
+        userRow.innerHTML = `
+          <div class="user-email">
+            ${user.firstName} ${user.lastName} (${user.email})
+            ${user.isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+          </div>
+          <div>$${(user.budget || 0).toFixed(2)}</div>
+          <div>${user.taskCount || 0}</div>
+          <div style="color: ${spentColor}">$${(user.totalSpent || 0).toFixed(2)}</div>
+          <div>${new Date(user.createdAt).toLocaleDateString()}</div>
+          <div class="action-buttons">
+            <button class="btn-small btn-edit" onclick="editUserBudget('${user.id}', ${user.budget || 0})">Edit</button>
+            ${!user.isAdmin ? `<button class="btn-small btn-delete" onclick="deleteUser('${user.id}', '${user.email}')">Delete</button>` : '<span style="color: #666; font-size: 0.8em;">Protected</span>'}
+          </div>
+        `;
+        container.appendChild(userRow);
+      });
+    }
+
+    function updateStats(users) {
+      const totalUsers = users.length;
+      const totalBudget = users.reduce((sum, user) => sum + (user.budget || 0), 0);
+      const totalTasks = users.reduce((sum, user) => sum + (user.taskCount || 0), 0);
+      const totalSpent = users.reduce((sum, user) => sum + (user.totalSpent || 0), 0);
+
+      document.getElementById('totalUsers').textContent = totalUsers;
+      document.getElementById('totalBudget').textContent = `$${totalBudget.toFixed(2)}`;
+      document.getElementById('totalTasks').textContent = totalTasks;
+      document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
+    }
+
+    function editUserBudget(userId, currentBudget) {
+      const newBudget = prompt(`Enter new budget amount:`, currentBudget.toFixed(2));
+      
+      if (newBudget === null) return; // User cancelled
+      
+      const budgetValue = parseFloat(newBudget);
+      
+      if (isNaN(budgetValue) || budgetValue < 0) {
+        showError('Please enter a valid budget amount (0 or greater)');
+        return;
+      }
+
       fetch(`/admin/user/${userId}/budget`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ budget: parseFloat(newBudget) })
+        body: JSON.stringify({ budget: budgetValue })
       })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          showSuccess(`Budget updated to $${budgetValue.toFixed(2)} successfully!`);
           loadAdminData(); // Refresh the data
         } else {
-          alert('Failed to update budget');
+          throw new Error(data.error || 'Failed to update budget');
         }
       })
       .catch(error => {
         console.error('Error updating budget:', error);
-        alert('Failed to update budget');
+        showError('Failed to update budget: ' + error.message);
       });
     }
-  }
 
-  function deleteUser(userId, email) {
-    if (confirm(`Are you sure you want to delete user: ${email}?`)) {
+    function deleteUser(userId, email) {
+      if (!confirm(`⚠️ Are you sure you want to delete user "${email}"?\n\nThis will permanently delete:\n• User account\n• All budget data\n• All tasks/items\n\nThis action cannot be undone!`)) {
+        return;
+      }
+
       fetch(`/admin/user/${userId}`, {
         method: 'DELETE'
       })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          showSuccess(`User "${email}" deleted successfully`);
           loadAdminData(); // Refresh the data
         } else {
-          alert('Failed to delete user');
+          throw new Error(data.error || 'Failed to delete user');
         }
       })
       .catch(error => {
         console.error('Error deleting user:', error);
-        alert('Failed to delete user');
+        showError('Failed to delete user: ' + error.message);
       });
     }
-  }
 
-  function logout() {
-    fetch('/logout', { method: 'POST' })
-      .then(() => {
-        window.location.href = 'accounts.html';
-      })
-      .catch(error => {
-        console.error('Logout error:', error);
-        window.location.href = 'accounts.html';
-      });
-  }
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        fetch('/logout', { method: 'POST' })
+          .then(() => {
+            window.location.href = 'accounts.html';
+          })
+          .catch(error => {
+            console.error('Logout error:', error);
+            window.location.href = 'accounts.html';
+          });
+      }
+    }
 
-  function showError(message) {
-    document.getElementById('loadingMessage').style.display = 'none';
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorMessage').style.display = 'block';
-  }
-</script>
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      const successDiv = document.getElementById('successMessage');
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+      
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        successDiv.style.display = 'none';
+      }, 3000);
+    }
+  </script>
 </body>
 </html>

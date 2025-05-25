@@ -1,22 +1,12 @@
 [
   {
-    "id": "1748180558893",
+    "id": "1748204952190",
     "email": "admin@budget.com",
-    "password": "bcb15f821479b4d5772bd0ca866c00ad5f926e3580720659cc80d39c9d09802a",
+    "password": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
     "firstName": "admin",
-    "lastName": "administrator",
+    "lastName": "user",
     "avatar": null,
     "isAdmin": true,
-    "createdAt": "2025-05-25T13:42:38.893Z"
-  },
-  {
-    "id": "1748181814306",
-    "email": "joewilliams@gmail.com",
-    "password": "62ba428e9161413a2873ce43c13551128f1c6c5599f40e38cd88ac14943da5dc",
-    "firstName": "Joe",
-    "lastName": "Williams",
-    "avatar": null,
-    "isAdmin": false,
-    "createdAt": "2025-05-25T14:03:34.306Z"
+    "createdAt": "2025-05-25T20:29:12.190Z"
   }
 ]

@@ -1,1 +1,0 @@
-The original idea of this project was to make a phone app that measures youre budget of every month of the year and tells you every month a recap of how did you spend the money and recommandation for next months! I was unable to make all of this work beacuse i didnt have that much time!

@@ -220,7 +220,7 @@
       <img src="/images/plus.png" alt="Create Icon" class="app-logo" />
     </div>
     <div class="header-right">
-      <button class="budget-amount" onclick="window.location.href='budget.html'">$0</button>
+      <button class="budget-amount" id="budgetAmountBtn" onclick="window.location.href='budget.html'">$0</button>
     </div>
   </header>
 
@@ -266,6 +266,7 @@
     let tasks = [];
     let deleteMode = false;
     let currentBudget = 0;
+    let totalSpent = 0;
 
     // Show sync status message with auto-refresh option
     function showSyncStatus(message, type, autoRefresh = false) {
@@ -289,26 +290,36 @@
       }
     }
 
-    // Update budget display
+    // Update budget display with remaining amount
     function updateBudgetDisplay() {
-      const budgetBtn = document.querySelector('.budget-amount');
-      const budgetRemaining = document.getElementById('budgetRemaining');
+      const remaining = currentBudget - totalSpent;
+      const budgetBtn = document.getElementById('budgetAmountBtn');
       
       if (budgetBtn) {
-        budgetBtn.textContent = `$${currentBudget.toFixed(2)}`;
+        budgetBtn.textContent = `$${remaining.toFixed(2)}`;
       }
-      
-      if (budgetRemaining) {
-        budgetRemaining.textContent = `Remaining Budget: $${currentBudget.toFixed(2)}`;
-        
-        if (currentBudget < 0) {
-          budgetRemaining.className = 'budget-remaining budget-negative';
-        } else if (currentBudget < 100) {
-          budgetRemaining.className = 'budget-remaining budget-warning';
-        } else {
-          budgetRemaining.className = 'budget-remaining budget-positive';
-        }
-      }
+    }
+
+    // Load budget and tasks, calculate remaining
+    function loadRemainingBudget() {
+      Promise.all([
+        fetch('/get-budget').then(res => res.json()).catch(() => ({ budget: 0 })),
+        fetch('/get-tasks').then(res => res.json()).catch(() => ({ tasks: [] }))
+      ])
+      .then(([budgetData, tasksData]) => {
+        currentBudget = budgetData.budget || 0;
+        tasks = tasksData.tasks || [];
+        totalSpent = tasks.reduce((sum, task) => sum + parseFloat(task.price || 0), 0);
+        updateBudgetDisplay();
+        renderTasks();
+      })
+      .catch(() => {
+        currentBudget = 0;
+        totalSpent = 0;
+        tasks = [];
+        updateBudgetDisplay();
+        renderTasks();
+      });
     }
 
     // Render all tasks
@@ -353,9 +364,10 @@
         return;
       }
       
-      // Check if user has enough budget
-      if (price > currentBudget) {
-        const proceed = confirm(`This item costs $${price.toFixed(2)} but you only have $${currentBudget.toFixed(2)} remaining. This will put you over budget. Continue?`);
+      // Check if user has enough budget remaining
+      const remaining = currentBudget - totalSpent;
+      if (price > remaining) {
+        const proceed = confirm(`This item costs $${price.toFixed(2)} but you only have $${remaining.toFixed(2)} remaining. This will put you over budget. Continue?`);
         if (!proceed) return;
       }
       
@@ -392,8 +404,9 @@
         const oldPrice = parseFloat(task.price);
         const newPriceFloat = parseFloat(newPrice);
         const priceDiff = newPriceFloat - oldPrice;
+        const remaining = currentBudget - totalSpent;
         
-        if (priceDiff > 0 && priceDiff > currentBudget) {
+        if (priceDiff > 0 && priceDiff > remaining) {
           const proceed = confirm(`Increasing price by $${priceDiff.toFixed(2)} will put you over budget. Continue?`);
           if (!proceed) return;
         }
@@ -477,54 +490,24 @@
       renderTasks();
     }
 
-    // Load tasks from server
-    function loadTasksFromServer() {
-      fetch('/get-tasks')
-        .then(response => {
-          if (!response.ok) throw new Error('Failed to load tasks');
-          return response.json();
-        })
-        .then(data => {
-          tasks = data.tasks || [];
-          
-          // Also save to localStorage for homepage
-          localStorage.setItem('budgetAppItems', JSON.stringify(
-            tasks.map(task => ({
-              id: task.id,
-              name: task.name,
-              price: task.price,
-              createdAt: task.createdAt || new Date().toISOString()
-            }))
-          ));
-          
-          renderTasks();
-        })
-        .catch(error => {
-          console.error('Error loading tasks:', error);
-          tasks = [];
-          renderTasks();
-        });
-    }
-
-    // Load budget
-    function loadBudget() {
-      fetch('/get-budget')
-        .then(res => res.json())
-        .then(data => {
-          currentBudget = data.budget || 0;
-          updateBudgetDisplay();
-        })
-        .catch(error => {
-          console.error('Error loading budget:', error);
-          currentBudget = 0;
-          updateBudgetDisplay();
-        });
-    }
-
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
-      loadBudget();
-      loadTasksFromServer();
+      loadRemainingBudget();
+      
+      // Check if user is admin and add admin access
+      fetch('/check-session')
+        .then(res => res.json())
+        .then(data => {
+          if (data.isAdmin) {
+            const userIcon = document.querySelector('.user-icon');
+            if (userIcon) {
+              userIcon.style.cursor = 'pointer';
+              userIcon.title = 'Click to access Admin Dashboard';
+              userIcon.onclick = () => window.location.href = 'admin.html';
+            }
+          }
+        })
+        .catch(err => console.log('Admin check failed:', err));
     });
   </script>
 </body>
