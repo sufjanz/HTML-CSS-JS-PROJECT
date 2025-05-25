@@ -1,4 +1,4 @@
-The original idea was to make an app to control our money for every month and compare them at the end of the month with each other with AI to tell you which buys were nesscesary and which were not and also differentiate priorities of different products but i wasn't able to do that beacuse of the complexity and time limit!
+The original idea was to make an app to control our money for every month and compare them at the end of the month with each other with AI to tell you which buys were nesscesary and which were not and also differentiate priorities of different products, also i had to add different types of themes and languages, but i wasn't able to do all of that beacuse of the complexity and time limit!
 
 
 App features:
