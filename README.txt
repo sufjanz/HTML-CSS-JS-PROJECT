@@ -1,5 +1,9 @@
 The original idea was to make an app to control our money for every month and compare them at the end of the month with each other with AI to tell you which buys were nesscesary and which were not and also differentiate priorities of different products, also i had to add different types of themes and languages, but i wasn't able to do all of that beacuse of the complexity and time limit!
 
+To run run this in terminal:
+cd C:\Users\Student\Documents\GitHub\HTML-CSS-JS-PROJECT/tournament
+then this:
+node server.js
 
 App features:
 1. Make account with your first name last name email and avatar, avatar can be changed after the account creation, the email used to signup needs to have @ and .com or else it shows errors!
