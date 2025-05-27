@@ -8,4 +8,4 @@ App features:
 
 App is designed for phones so make sure you use phone display resolution for best experience!
 
-
+Last commit after the submitting time was made to reset users for better testing!
